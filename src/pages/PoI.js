@@ -8,8 +8,8 @@ import TabContent from "rc-tabs/lib/TabContent";
 import ScrollableInkTabBar from "rc-tabs/lib/ScrollableInkTabBar";
 // import { Map as LeafMap, TileLayer, Marker, Popup } from "react-leaflet";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
-import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import {Icon} from 'leaflet'
+import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import userIconPng from "../assets/user.png"
 
 function PoI(props) {
