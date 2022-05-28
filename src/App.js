@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 import {Alert, Navbar,Nav,NavDropdown} from 'react-bootstrap'
 import logo from './logo.svg';
-import Home from './pages/Home'
 import PoI from './pages/PoI'
 // import LoadingOverlay from 'react-loading-overlay';
 
@@ -81,9 +80,6 @@ function App() {
         {/* A <Switch> looks through its children <Route>s and
             renders the first one that matches the current URL. */}
         <Switch>
-          <Route path="/Home">
-            <Home setLoading={setLoading} alertFunction={alertFunction} alertSuccessFunction={alertSuccessFunction}/>
-          </Route>
           <Route path="/">
             <PoI setLoading={setLoading} alertFunction={alertFunction} alertSuccessFunction={alertSuccessFunction}/>
           </Route>
