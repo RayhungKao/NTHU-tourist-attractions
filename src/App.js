@@ -28,7 +28,7 @@ function App() {
     setSuccessMessage(data)
     setTimeout(()=>{
       setSuccessMessage(null)
-    },3000)
+    },10000)
   }
 
   return (

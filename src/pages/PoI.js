@@ -15,12 +15,85 @@ import userIconPng from "../assets/user.png"
 function PoI(props) {
   var callback = function(key) {};
   // const [user, setUser] = useState({});
-  const [userLatitude, setUserLatitude] = useState("");
-  const [userLongitude, setUserLongitude] = useState("");
+  const [userLocation, setUserLocation] = useState({latitude: "", longitude: ""});
+  const [userInsidePoI, setUserInsidePoI] = useState({inside: false, PoI: 0});
+
+
+  // Get user's position
+  var id, target, options;
+  
+  target = {
+    1: {latitude: 24.795766621401005, longitude: 120.9919832462873, description: "台達館"},
+    2: {latitude: 24.795332380711834, longitude: 120.99471792945154, description: "旺宏館"},
+    3: {latitude: 24.794339028676507, longitude: 120.99331733144486, description: "綜二"}, 
+    4: {latitude: 24.79811232481267, longitude: 120.9910483527293, description: "清華會館"},  
+    5: {latitude: 24.792459765107758, longitude: 120.99004427985564, description: "梅園"}, 
+    6: {latitude: 24.78792834315937, longitude: 120.99083261427393, description: "弈園"},  
+    7: {latitude: 24.793869810505374, longitude: 120.99511878432668, description: "成功湖"},
+    8: {latitude: 24.79066534952453, longitude: 120.99570350574783, description: "清交小徑"}, 
+  };
+
+  function success(pos) {
+    var crd = pos.coords;
+    var distance;
+
+    for (var i=1; i<=8; i++){
+      distance = getDistance([crd.latitude, crd.longitude], [target[i].latitude, target[i].longitude])
+      console.log('i=' + i + ': distance: ' + distance);
+
+      if (distance < 50) {
+        if (userInsidePoI.inside) {
+          continue;
+        }
+        else {
+          props.alertSuccessFunction('Congratulations, you reached one of the PoI: ' + target[i].description);
+          setUserInsidePoI( {inside: true, PoI: i} );
+        }
+        // navigator.geolocation.clearWatch(id);
+      }
+      else {
+        if (userInsidePoI.inside && userInsidePoI.PoI === i) {
+          props.alertSuccessFunction('You are leaving one of the PoI: ' + target[i].description);
+          setUserInsidePoI( {inside: false, PoI: 0} );
+        }
+        else {
+          continue;
+        }
+      }
+    }
+
+    console.log('current latitude: ' + crd.latitude + ', longitude:' + crd.longitude);
+
+    var convertedTime = new Date(pos.timestamp).toLocaleTimeString("en-US")
+    console.log('retrieval time: ' + convertedTime);
+
+    console.log('userInsidePoI.inside?: ' + userInsidePoI.inside + ', userInsidePoI.PoI: ' + userInsidePoI.PoI);
+
+    // setUser(pos.coords)
+    setUserLocation({latitude: crd.latitude, longitude: crd.longitude});    
+  }
+
+  function error(err) {
+    console.warn('ERROR(' + err.code + '): ' + err.message);
+  }
+
+  options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+  };
+
 
   useEffect(() => {
+    id = navigator.geolocation.watchPosition(success, error, options);
+    console.log("======================" + id + "=========================");
+    if (id!==1) {
+      navigator.geolocation.clearWatch(id);
+      console.log("======================clear id=" + id + "=========================");
+    }
   }, []);
 
+  
   //Calculate distance
   function getDistance(origin, destination) {
     // return distance in meters
@@ -41,97 +114,6 @@ function PoI(props) {
       return degree*Math.PI/180;
   }
 
-
-  // Get user's position
-  var id, target, options;
-  
-  target = {
-    1: {latitude: 24.795697531770415, longitude: 120.99517208487173}, //台達館
-    2: {latitude: 24.79616621645597, longitude: 120.9924249473166},   //旺宏館
-    3: {latitude: 24.794543367966625, longitude: 120.99341255578466}, //綜二
-    4: {latitude: 24.79811232481267, longitude: 120.9910483527293},   //清華會館
-    5: {latitude: 24.792459765107758, longitude: 120.99004427985564}, //梅園
-    6: {latitude: 24.78792834315937, longitude: 120.99083261427393},  //弈園
-    7: {latitude: 24.793869810505374, longitude: 120.99511878432668,},//成功湖
-    8: {latitude: 24.79066534952453, longitude: 120.99570350574783},  //清交小徑
-  };
-
-  function success(pos) {
-    var crd = pos.coords;
-    var distance;
-
-    for (var i=1; i<=8; i++){
-      distance = getDistance([crd.latitude, crd.longitude], [target[i].latitude, target[i].longitude])
-
-      if (distance < 50) {
-        // props.alertSuccessFunction('Congratulations, you reached one of the PoI')
-        switch (i) {
-          case 1: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 台達館');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 2: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 旺宏館');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 3: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 綜二');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 4: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 清華會館');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 5: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 梅園');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 6: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 弈園');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 7: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 成功湖');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          case 8: {
-            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 清交小徑');
-            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
-          }
-          default: {
-            break;
-          }
-        }
-        console.log('i=' + i + ': distance: ' + distance);
-        // navigator.geolocation.clearWatch(id);
-      }
-    }
-
-    console.log('current latitude: ' + crd.latitude + ', longitude:' + crd.longitude);
-    // console.log('distance: ' + distance);
-
-    var convertedTime = new Date(pos.timestamp).toLocaleTimeString("en-US")
-    console.log('retrieval time: ' + convertedTime);
-
-    // setUser(pos.coords)
-    setUserLatitude(crd.latitude)
-    setUserLongitude(crd.longitude)
-    
-  }
-
-  function error(err) {
-    console.warn('ERROR(' + err.code + '): ' + err.message);
-  }
-
-  options = {
-    enableHighAccuracy: true,
-    timeout: 5000,
-    maximumAge: 4000
-  };
-
-  id = navigator.geolocation.watchPosition(success, error, options);
-
-
   return (
     <Tabs
       defaultActiveKey="1"
@@ -140,49 +122,54 @@ function PoI(props) {
       renderTabContent={() => <TabContent />}
     >
       <TabPane tab="tab 1" key="1">
+        {
+        }
+        {
+          // console.log("======================" + id + "=========================")
+        }
         <MapContainer class="map" selected="selected" center={[24.794543367966625, 120.99341255578466]} zoom={11} style={{ height: "90vh" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           {
-            (userLatitude)?<Marker id="user" position={[userLatitude, userLongitude]} icon={new Icon({iconUrl: userIconPng, iconSize: [30, 30], iconAnchor: [12, 41]})}><Popup>User現在位置. <br /> Easily customizable.</Popup></Marker>:""
+            (userLocation)?<Marker id="user" position={[userLocation.latitude, userLocation.longitude]} icon={new Icon({iconUrl: userIconPng, iconSize: [30, 30], iconAnchor: [12, 41]})}><Popup>User現在位置. <br /> Easily customizable.</Popup></Marker>:""
           }
-          <Marker id="1" position={[24.795697531770415, 120.99517208487173]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="1" position={[target[1].latitude, target[1].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              台達館. <br /> Easily customizable.
+              {target[1].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="2" position={[24.79616621645597, 120.9924249473166]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="2" position={[target[2].latitude, target[2].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              旺宏館（路易莎）. <br /> Easily customizable.
+              {target[2].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="3" position={[24.794543367966625, 120.99341255578466]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="3" position={[target[3].latitude, target[3].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              綜二. <br /> Easily customizable.
+              {target[3].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="4" position={[24.79811232481267, 120.9910483527293]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="4" position={[target[4].latitude, target[4].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              清華會館. <br /> Easily customizable.
+              {target[4].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="5" position={[24.792459765107758, 120.99004427985564]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="5" position={[target[5].latitude, target[5].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              梅園. <br /> Easily customizable.
+              {target[5].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="6" position={[24.78792834315937, 120.99083261427393]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="6" position={[target[6].latitude, target[6].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              奕園. <br /> Easily customizable.
+              {target[6].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="7" position={[24.793869810505374, 120.99511878432668]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="7" position={[target[7].latitude, target[7].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              成功湖（寄梅亭）. <br /> Easily customizable.
+              {target[7].description} <br /> Easily customizable.
             </Popup>
           </Marker>
-          <Marker id="8" position={[24.79066534952453, 120.99570350574783]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
+          <Marker id="8" position={[target[8].latitude, target[8].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
-              清交小徑. <br /> Easily customizable.
+              {target[8].description} <br /> Easily customizable.
             </Popup>
           </Marker>
         </MapContainer>
