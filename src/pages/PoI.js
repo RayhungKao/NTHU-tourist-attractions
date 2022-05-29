@@ -14,78 +14,12 @@ import userIconPng from "../assets/user.png"
 
 function PoI(props) {
   var callback = function(key) {};
-  // const [user, setUser] = useState({});
-  const [userLocation, setUserLocation] = useState({latitude: "", longitude: ""});
+
+  const [userLocation, setUserLocation] = useState({latitude: 0, longitude: 0});
   const [userInsidePoI, setUserInsidePoI] = useState({inside: false, PoI: 0});
 
-
-  // Get user's position
-  var id, target, options;
-  
-  target = {
-    1: {latitude: 24.795766621401005, longitude: 120.9919832462873, description: "台達館"},
-    2: {latitude: 24.795332380711834, longitude: 120.99471792945154, description: "旺宏館"},
-    3: {latitude: 24.794339028676507, longitude: 120.99331733144486, description: "綜二"}, 
-    4: {latitude: 24.79811232481267, longitude: 120.9910483527293, description: "清華會館"},  
-    5: {latitude: 24.792459765107758, longitude: 120.99004427985564, description: "梅園"}, 
-    6: {latitude: 24.78792834315937, longitude: 120.99083261427393, description: "弈園"},  
-    7: {latitude: 24.793869810505374, longitude: 120.99511878432668, description: "成功湖"},
-    8: {latitude: 24.79066534952453, longitude: 120.99570350574783, description: "清交小徑"}, 
-  };
-
-  function success(pos) {
-    var crd = pos.coords;
-    var distance;
-
-    for (var i=1; i<=8; i++){
-      distance = getDistance([crd.latitude, crd.longitude], [target[i].latitude, target[i].longitude])
-      console.log('i=' + i + ': distance: ' + distance);
-
-      if (distance < 50) {
-        if (userInsidePoI.inside) {
-          continue;
-        }
-        else {
-          props.alertSuccessFunction('Congratulations, you reached one of the PoI: ' + target[i].description);
-          setUserInsidePoI( {inside: true, PoI: i} );
-        }
-        // navigator.geolocation.clearWatch(id);
-      }
-      else {
-        if (userInsidePoI.inside && userInsidePoI.PoI === i) {
-          props.alertSuccessFunction('You are leaving one of the PoI: ' + target[i].description);
-          setUserInsidePoI( {inside: false, PoI: 0} );
-        }
-        else {
-          continue;
-        }
-      }
-    }
-
-    console.log(crd);
-
-    var convertedTime = new Date(pos.timestamp).toLocaleTimeString("en-US")
-    console.log('retrieval time: ' + convertedTime);
-
-    console.log('userInsidePoI.inside?: ' + userInsidePoI.inside + ', userInsidePoI.PoI: ' + userInsidePoI.PoI);
-
-    // setUser(pos.coords)
-    setUserLocation({latitude: crd.latitude, longitude: crd.longitude});    
-  }
-
-  function error(err) {
-    console.warn('ERROR(' + err.code + '): ' + err.message);
-  }
-
-  options = {
-    enableHighAccuracy: true,
-    timeout: 5000,
-    maximumAge: 0
-  };
-
-
   useEffect(() => {
-    id = navigator.geolocation.watchPosition(success, error, options);
+    let id = navigator.geolocation.watchPosition(success, error, options);
     console.log("======================" + id + "=========================");
     if (id!==1) {
       navigator.geolocation.clearWatch(id);
@@ -93,7 +27,45 @@ function PoI(props) {
     }
   }, []);
 
-  
+  useEffect(() => {
+    console.log('userLocation: ' + userLocation.latitude + ', ' + userLocation.longitude); 
+    geofence();
+  }, [userLocation])
+
+  useEffect(() => {
+    console.log('userInsidePoI.inside?: ' + userInsidePoI.inside + ', userInsidePoI.PoI: ' + userInsidePoI.PoI); 
+  }, [userInsidePoI])
+
+
+  function geofence() {
+    var distance;
+    for (var i=1; i<=8; i++){
+      distance = getDistance([userLocation.latitude, userLocation.longitude], [target[i].latitude, target[i].longitude])
+      console.log('i=' + i + ': distance: ' + distance);
+
+      if (distance < 50) {
+        if (userInsidePoI.inside) {
+          // console.log("++++++++inside+++++++");
+          continue;
+        }
+        else {
+          props.alertSuccessFunction('Congratulations, you reached one of the PoI: ' + target[i].description);
+          setUserInsidePoI( {inside: true, PoI: i} );
+        }
+      }
+      else {
+        if (userInsidePoI.inside && userInsidePoI.PoI === i) {
+          props.alertSuccessFunction('You are leaving one of the PoI: ' + target[i].description);
+          setUserInsidePoI( {inside: false, PoI: 0} );
+        }
+        else {
+          // console.log("-------outside---------");
+          continue;
+        }
+      }
+    }
+  }
+
   //Calculate distance
   function getDistance(origin, destination) {
     // return distance in meters
@@ -114,6 +86,64 @@ function PoI(props) {
       return degree*Math.PI/180;
   }
 
+  // Get user's position
+  var target, options;
+  
+  target = {
+    1: {latitude: 24.795766621401005, longitude: 120.9919832462873, description: "台達館"},
+    2: {latitude: 24.795332380711834, longitude: 120.99471792945154, description: "旺宏館"},
+    3: {latitude: 24.794339028676507, longitude: 120.99331733144486, description: "綜二"}, 
+    4: {latitude: 24.79811232481267, longitude: 120.9910483527293, description: "清華會館"},  
+    5: {latitude: 24.792459765107758, longitude: 120.99004427985564, description: "梅園"}, 
+    6: {latitude: 24.78792834315937, longitude: 120.99083261427393, description: "弈園"},  
+    7: {latitude: 24.793869810505374, longitude: 120.99511878432668, description: "成功湖"},
+    8: {latitude: 24.79066534952453, longitude: 120.99570350574783, description: "清交小徑"}, 
+  };
+
+  function success(pos) {
+    var crd = pos.coords;
+    // var distance;
+
+    console.log(crd);
+    setUserLocation({latitude: crd.latitude, longitude: crd.longitude});
+
+    // for (var i=1; i<=8; i++){
+    //   distance = getDistance([crd.latitude, crd.longitude], [target[i].latitude, target[i].longitude])
+    //   console.log('i=' + i + ': distance: ' + distance);
+
+    //   if (distance < 50) {
+    //     if (userInsidePoI.inside) {
+    //       continue;
+    //     }
+    //     else {
+    //       props.alertSuccessFunction('Congratulations, you reached one of the PoI: ' + target[i].description);
+    //       setUserInsidePoI( {inside: true, PoI: i} );
+    //     }
+    //   }
+    //   else {
+    //     if (userInsidePoI.inside && userInsidePoI === i) {
+    //       props.alertSuccessFunction('You are leaving one of the PoI: ' + target[i].description);
+    //       setUserInsidePoI( {inside: false, PoI: 0} );
+    //     }
+    //     else {
+    //       continue;
+    //     }
+    //   }
+    // }
+    var convertedTime = new Date(pos.timestamp).toLocaleTimeString("en-US")
+    console.log('retrieval time: ' + convertedTime);
+  }
+
+  function error(err) {
+    console.warn('ERROR(' + err.code + '): ' + err.message);
+  }
+
+  options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 1000
+  };
+
   return (
     <Tabs
       defaultActiveKey="1"
@@ -122,11 +152,6 @@ function PoI(props) {
       renderTabContent={() => <TabContent />}
     >
       <TabPane tab="tab 1" key="1">
-        {
-        }
-        {
-          // console.log("======================" + id + "=========================")
-        }
         <MapContainer class="map" selected="selected" center={[24.794543367966625, 120.99341255578466]} zoom={11} style={{ height: "90vh" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           {

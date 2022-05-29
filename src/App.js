@@ -1,5 +1,4 @@
 import React, { useState,useEffect} from "react";
-// import {AuthContext} from "./contexts";
 import {
   BrowserRouter as Router,
   Switch,
@@ -9,6 +8,7 @@ import {
 import {Alert, Navbar,Nav,NavDropdown} from 'react-bootstrap'
 import logo from './logo.svg';
 import PoI from './pages/PoI'
+
 // import LoadingOverlay from 'react-loading-overlay';
 
 import './App.css';
