@@ -21,7 +21,6 @@ function PoI(props) {
   useEffect(() => {
   }, []);
 
-
   //Calculate distance
   function getDistance(origin, destination) {
     // return distance in meters
@@ -47,22 +46,70 @@ function PoI(props) {
   var id, target, options;
   
   target = {
-    latitude : 24.79616621645597,
-    longitude: 120.9924249473166
+    1: {latitude: 24.795697531770415, longitude: 120.99517208487173}, //台達館
+    2: {latitude: 24.79616621645597, longitude: 120.9924249473166},   //旺宏館
+    3: {latitude: 24.794543367966625, longitude: 120.99341255578466}, //綜二
+    4: {latitude: 24.79811232481267, longitude: 120.9910483527293},   //清華會館
+    5: {latitude: 24.792459765107758, longitude: 120.99004427985564}, //梅園
+    6: {latitude: 24.78792834315937, longitude: 120.99083261427393},  //弈園
+    7: {latitude: 24.793869810505374, longitude: 120.99511878432668,},//成功湖
+    8: {latitude: 24.79066534952453, longitude: 120.99570350574783},  //清交小徑
   };
 
   function success(pos) {
     var crd = pos.coords;
-    var distance = getDistance([crd.latitude, crd.longitude], [target.latitude, target.longitude])
+    var distance;
 
-    if (distance < 50) {
-      props.alertSuccessFunction('Congratulations, you reached one of the PoI')
-      // navigator.geolocation.clearWatch(id);
+    for (var i=1; i<=8; i++){
+      distance = getDistance([crd.latitude, crd.longitude], [target[i].latitude, target[i].longitude])
+
+      if (distance < 50) {
+        // props.alertSuccessFunction('Congratulations, you reached one of the PoI')
+        switch (i) {
+          case 1: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 台達館');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 2: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 旺宏館');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 3: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 綜二');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 4: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 清華會館');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 5: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 梅園');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 6: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 弈園');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 7: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 成功湖');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          case 8: {
+            props.alertSuccessFunction('Congratulations, you reached one of the PoI: 清交小徑');
+            break; // 如果這裡沒有 break，則會繼續跑後面的 statement（不需要判斷有沒有符合條件）
+          }
+          default: {
+            break;
+          }
+        }
+        console.log('i=' + i + ': distance: ' + distance);
+        // navigator.geolocation.clearWatch(id);
+      }
     }
-    else {
-        console.log('current latitude: ' + crd.latitude + ', longitude:' + crd.longitude);
-        console.log('distance: ' + distance);
-    }
+
+    console.log('current latitude: ' + crd.latitude + ', longitude:' + crd.longitude);
+    // console.log('distance: ' + distance);
+
     var convertedTime = new Date(pos.timestamp).toLocaleTimeString("en-US")
     console.log('retrieval time: ' + convertedTime);
 
@@ -84,10 +131,6 @@ function PoI(props) {
 
   id = navigator.geolocation.watchPosition(success, error, options);
 
-
-  
-
-// var distance = getDistance([lat1, lng1], [lat2, lng2])
 
   return (
     <Tabs
