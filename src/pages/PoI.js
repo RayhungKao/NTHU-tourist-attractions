@@ -19,11 +19,15 @@ function PoI(props) {
   const [userInsidePoI, setUserInsidePoI] = useState({inside: false, PoI: 0});
 
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      setUserLocation({latitude: position.coords.latitude, longitude: position.coords.longitude});
+    });  
     let id = navigator.geolocation.watchPosition(success, error, options);
     console.log("======================" + id + "=========================");
-    if (id!==1) {
+    
+    return ()=> {
       navigator.geolocation.clearWatch(id);
-      console.log("======================clear id=" + id + "=========================");
+      console.log("====================== clear" + id + "=========================");
     }
   }, []);
 
