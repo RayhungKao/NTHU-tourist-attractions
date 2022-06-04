@@ -7,20 +7,24 @@ import Tabs, { TabPane } from "rc-tabs";
 import TabContent from "rc-tabs/lib/TabContent";
 import ScrollableInkTabBar from "rc-tabs/lib/ScrollableInkTabBar";
 // import { Map as LeafMap, TileLayer, Marker, Popup } from "react-leaflet";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, CircleMarker } from 'react-leaflet'
 import {Icon} from 'leaflet'
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import userIconPng from "../assets/user.png"
+
+import { baseUrl } from '../config'
+import { v4 as uuidv4 } from 'uuid';
 
 function PoI(props) {
   var callback = function(key) {};
 
   const [userLocation, setUserLocation] = useState({latitude: 0, longitude: 0});
   const [userInsidePoI, setUserInsidePoI] = useState({inside: false, PoI: 0});
-
+  
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(function(position) {
       setUserLocation({latitude: position.coords.latitude, longitude: position.coords.longitude});
+      console.log(uuidv4());
     });  
     let id = navigator.geolocation.watchPosition(success, error, options);
     console.log("======================" + id + "=========================");
@@ -47,7 +51,7 @@ function PoI(props) {
       distance = getDistance([userLocation.latitude, userLocation.longitude], [target[i].latitude, target[i].longitude])
       console.log('i=' + i + ': distance: ' + distance);
 
-      if (distance < 50) {
+      if (distance < radius) {
         if (userInsidePoI.inside) {
           // console.log("++++++++inside+++++++");
           continue;
@@ -55,12 +59,14 @@ function PoI(props) {
         else {
           props.alertSuccessFunction('Congratulations, you reached one of the PoI: ' + target[i].description);
           setUserInsidePoI( {inside: true, PoI: i} );
+          // postToDB();
         }
       }
       else {
         if (userInsidePoI.inside && userInsidePoI.PoI === i) {
           props.alertSuccessFunction('You are leaving one of the PoI: ' + target[i].description);
           setUserInsidePoI( {inside: false, PoI: 0} );
+          // postToDB();
         }
         else {
           // console.log("-------outside---------");
@@ -111,29 +117,6 @@ function PoI(props) {
     console.log(crd);
     setUserLocation({latitude: crd.latitude, longitude: crd.longitude});
 
-    // for (var i=1; i<=8; i++){
-    //   distance = getDistance([crd.latitude, crd.longitude], [target[i].latitude, target[i].longitude])
-    //   console.log('i=' + i + ': distance: ' + distance);
-
-    //   if (distance < 50) {
-    //     if (userInsidePoI.inside) {
-    //       continue;
-    //     }
-    //     else {
-    //       props.alertSuccessFunction('Congratulations, you reached one of the PoI: ' + target[i].description);
-    //       setUserInsidePoI( {inside: true, PoI: i} );
-    //     }
-    //   }
-    //   else {
-    //     if (userInsidePoI.inside && userInsidePoI === i) {
-    //       props.alertSuccessFunction('You are leaving one of the PoI: ' + target[i].description);
-    //       setUserInsidePoI( {inside: false, PoI: 0} );
-    //     }
-    //     else {
-    //       continue;
-    //     }
-    //   }
-    // }
     var convertedTime = new Date(pos.timestamp).toLocaleTimeString("en-US")
     console.log('retrieval time: ' + convertedTime);
   }
@@ -148,6 +131,39 @@ function PoI(props) {
     maximumAge: 1000
   };
 
+  //post location and timestamp info to backend db storage for user entering or exiting some PoI's geofence
+  // function postToDB(){
+  //   const timestamp = new Date().toLocaleString('en-US', {hour12:false});
+  //   console.log(timestamp);
+  //   const requestOptions = {
+  //       method: 'POST',
+  //       headers: {
+  //           'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ timestampt: timestamp })
+  //   };
+  //   fetch(baseUrl+'/api/v1/user/track', requestOptions)
+  //   .then(async response =>{
+  //       let result = await response.json()
+  //       if (response.status === 200){
+  //           // props.alertSuccessFunction(`Welcome, ${result.account.username}`)
+  //           // console.log()
+  //           setTimeout(()=>{
+  //           },3000)
+  //       }
+  //       else{
+  //           props.alertFunction(`${result.message}`)
+  //           setTimeout(()=>{
+  //               window.location.reload()
+  //           },3000)
+  //       }
+  //   })
+  //   .catch(error =>{
+  //       props.alertFunction("unknown error")
+  //   })
+  // }
+  const blueOptions = { fillColor: 'blue' }
+  const radius = 50
   return (
     <Tabs
       defaultActiveKey="1"
@@ -166,41 +182,49 @@ function PoI(props) {
               {target[1].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[1].latitude, target[1].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="2" position={[target[2].latitude, target[2].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[2].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[2].latitude, target[2].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="3" position={[target[3].latitude, target[3].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[3].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[3].latitude, target[3].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="4" position={[target[4].latitude, target[4].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[4].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[4].latitude, target[4].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="5" position={[target[5].latitude, target[5].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[5].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[5].latitude, target[5].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="6" position={[target[6].latitude, target[6].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[6].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[6].latitude, target[6].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="7" position={[target[7].latitude, target[7].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[7].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[7].latitude, target[7].longitude]} pathOptions={blueOptions} radius={radius} />
           <Marker id="8" position={[target[8].latitude, target[8].longitude]} icon={new Icon({iconUrl: markerIconPng, iconSize: [25, 41], iconAnchor: [12, 41]})}>
             <Popup>
               {target[8].description} <br /> Easily customizable.
             </Popup>
           </Marker>
+          <Circle center={[target[8].latitude, target[8].longitude]} pathOptions={blueOptions} radius={radius} />
         </MapContainer>
       </TabPane>
       <TabPane tab="tab 2" key="2">
